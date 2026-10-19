@@ -11,6 +11,8 @@
 - [电脑侦查 forensics.html](https://zunyaner.github.io/puzzle-demos/forensics.html)
 - [灰荆庄园 manor.html](https://zunyaner.github.io/puzzle-demos/manor.html)（恐怖，约 15 分钟，建议戴耳机）
 - [生日惊喜 birthday.html](https://zunyaner.github.io/puzzle-demos/birthday.html)（手机友好 · [编辑器](https://zunyaner.github.io/puzzle-demos/birthday.html?edit=1)）
+- [生日 · 一支蜡烛 birthday-elegant.html](https://zunyaner.github.io/puzzle-demos/birthday-elegant.html)（高级感 · [编辑器](https://zunyaner.github.io/puzzle-demos/birthday-elegant.html?edit=1)）
+- [生日 · 晚一点的温柔 birthday-gentle.html](https://zunyaner.github.io/puzzle-demos/birthday-gentle.html)（温柔 · [编辑器](https://zunyaner.github.io/puzzle-demos/birthday-gentle.html?edit=1)）
 - [海龟汤馆 haiguitang.html](https://zunyaner.github.io/puzzle-demos/haiguitang.html)（情境推理）
 
 预计单局约 15–25 分钟。
@@ -61,6 +63,16 @@
 
 **定制**：文件顶部 `CONFIG` 对象；或打开 `?edit=1` 填表、上传照片（客户端压缩为 data URL），点「生成我的生日页」下载独立 HTML 发送。
 
+## 生日 · 一支蜡烛 `birthday-elegant.html`（高级感静看）
+
+近黑底、宋体衬线、细香槟金线条，胶片颗粒与暗角。开场 → 一支写实 Canvas 烛火（长按屏幕或对麦克风吹气熄灭，烟缕升起后缓慢亮起祝福）→ 全幅照片慢推镜头交叉淡化 + 字幕 → 信件逐行显影。音乐为稀疏钢琴与低垫音，结尾才放慢地带出一点《生日快乐》。✦ 连点三下有彩蛋。
+
+## 生日 · 晚一点的温柔 `birthday-gentle.html`（温柔不甜腻）
+
+奶油纸、灰玫瑰与鼠尾草绿、黄昏渐变与漂浮光尘。拆开折起的便笺 → 一排小茶蜡（逐盏轻点或麦克风吹灭）→ 慢速音乐盒《生日快乐》→ 木桌上的拍立得（可拖动，轻点翻到背面看手写说明）→ 纸上逐字手写信。署名连点三下有彩蛋。
+
+两版与 `birthday.html` 共用同一份 `CONFIG` 字段，同样支持 `?edit=1` 编辑器生成下载、静音与 `prefers-reduced-motion`。
+
 ## 海龟汤馆 `haiguitang.html`
 
 **玩法**：阅读匪夷所思的「结局」，只用是非问句逼近真相；馆主回答「是 / 不是 / 无关 / 重要」。可随时提交自由文本推理（同义可通过，只提示仍缺哪类信息）。「放弃」下折叠剧透。
@@ -84,6 +96,8 @@
 | `forensics.html` | 电脑侦查 |
 | `manor.html` | 灰荆庄园（恐怖） |
 | `birthday.html` | 生日惊喜 |
+| `birthday-elegant.html` | 生日 · 高级感静看 |
+| `birthday-gentle.html` | 生日 · 温柔不甜腻 |
 | `haiguitang.html` | 海龟汤馆 |
 | `.nojekyll` | 禁用 Jekyll 处理 |
 | `README.md` | 本说明 |
