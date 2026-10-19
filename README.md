@@ -10,6 +10,7 @@
 - [侦探卷宗 dossier.html](https://zunyaner.github.io/puzzle-demos/dossier.html)
 - [电脑侦查 forensics.html](https://zunyaner.github.io/puzzle-demos/forensics.html)
 - [灰荆庄园 manor.html](https://zunyaner.github.io/puzzle-demos/manor.html)（恐怖，约 15 分钟，建议戴耳机）
+- [生日惊喜 birthday.html](https://zunyaner.github.io/puzzle-demos/birthday.html)（手机友好 · [编辑器](https://zunyaner.github.io/puzzle-demos/birthday.html?edit=1)）
 - [海龟汤馆 haiguitang.html](https://zunyaner.github.io/puzzle-demos/haiguitang.html)（情境推理）
 
 预计单局约 15–25 分钟。
@@ -54,6 +55,12 @@
 
 画面全部由 Canvas 2D / SVG 程序化绘制，声音全部由 WebAudio 合成，无任何外部资源。
 
+## 生日惊喜 `birthday.html`
+
+温馨向生日小站：拆信封 → 吹蜡烛（点击或可选麦克风）→ 烟花与旋律 → 回忆卡片 → 打字机信件。支持 `prefers-reduced-motion` 与静音。
+
+**定制**：文件顶部 `CONFIG` 对象；或打开 `?edit=1` 填表、上传照片（客户端压缩为 data URL），点「生成我的生日页」下载独立 HTML 发送。
+
 ## 海龟汤馆 `haiguitang.html`
 
 **玩法**：阅读匪夷所思的「结局」，只用是非问句逼近真相；馆主回答「是 / 不是 / 无关 / 重要」。可随时提交自由文本推理（同义可通过，只提示仍缺哪类信息）。「放弃」下折叠剧透。
@@ -76,6 +83,7 @@
 | `dossier.html` | 侦探卷宗 |
 | `forensics.html` | 电脑侦查 |
 | `manor.html` | 灰荆庄园（恐怖） |
+| `birthday.html` | 生日惊喜 |
 | `haiguitang.html` | 海龟汤馆 |
 | `.nojekyll` | 禁用 Jekyll 处理 |
 | `README.md` | 本说明 |
