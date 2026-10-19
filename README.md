@@ -10,6 +10,7 @@
 - [侦探卷宗 dossier.html](https://zunyaner.github.io/puzzle-demos/dossier.html)
 - [电脑侦查 forensics.html](https://zunyaner.github.io/puzzle-demos/forensics.html)
 - [灰荆庄园 manor.html](https://zunyaner.github.io/puzzle-demos/manor.html)（恐怖，约 15 分钟，建议戴耳机）
+- [海龟汤馆 haiguitang.html](https://zunyaner.github.io/puzzle-demos/haiguitang.html)（情境推理）
 
 预计单局约 15–25 分钟。
 
@@ -53,6 +54,17 @@
 
 画面全部由 Canvas 2D / SVG 程序化绘制，声音全部由 WebAudio 合成，无任何外部资源。
 
+## 海龟汤馆 `haiguitang.html`
+
+**玩法**：阅读匪夷所思的「结局」，只用是非问句逼近真相；馆主回答「是 / 不是 / 无关 / 重要」。可随时提交自由文本推理（同义可通过，只提示仍缺哪类信息）。「放弃」下折叠剧透。
+
+**题量**：8 道原创汤，难度入门→进阶，题材含悬疑、温情、反转、黑色幽默。进度存 `localStorage`。
+
+**双模式**：
+
+1. **离线规则引擎（默认）**：关键词 / 意图匹配、同义、否定与「是不是」处理。
+2. **可选 AI**：设置里填 OpenAI 兼容 Base URL / API Key / 模型（仅存本机）。系统提示持有秘密故事，回复约束为四词。失败自动回退离线。注意 https Pages 无法请求明文 `http://` 内网地址（混合内容）。
+
 ## 本地打开
 
 克隆后用浏览器直接打开对应 HTML，或任意静态服务器托管本目录。仓库含 `.nojekyll` 以便 Pages 原样发布。
@@ -64,6 +76,7 @@
 | `dossier.html` | 侦探卷宗 |
 | `forensics.html` | 电脑侦查 |
 | `manor.html` | 灰荆庄园（恐怖） |
+| `haiguitang.html` | 海龟汤馆 |
 | `.nojekyll` | 禁用 Jekyll 处理 |
 | `README.md` | 本说明 |
 
