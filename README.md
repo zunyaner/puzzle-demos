@@ -9,6 +9,7 @@
 - 首页：https://zunyaner.github.io/puzzle-demos/
 - [侦探卷宗 dossier.html](https://zunyaner.github.io/puzzle-demos/dossier.html)
 - [电脑侦查 forensics.html](https://zunyaner.github.io/puzzle-demos/forensics.html)
+- [灰荆庄园 manor.html](https://zunyaner.github.io/puzzle-demos/manor.html)（恐怖，约 15 分钟，建议戴耳机）
 
 预计单局约 15–25 分钟。
 
@@ -38,6 +39,20 @@
 
 **风格**：深灰系统界面，中文标签。
 
+## 恐怖原型 · 灰荆庄园 `manor.html`
+
+**故事**：1899 年，遗产鉴定员艾达·莫尔来到灰荆庄园清点遗物，大门在身后锁死。庄园里游荡着一个高瘦的身影——当年的保姆。
+
+**玩法**：
+
+1. 第一人称手电探索 8 个房间（门厅、画廊、书房、餐厅、二楼走廊、主卧、育婴室、地下室）；物品只有被手电照到才看得见，电池会耗尽。
+2. 听声辨位：脚步、门轴、低语、心跳提示她的方向与距离；她进屋前躲进衣柜/床底/桌下，搜寻时按住「屏息」（气息有限）。被抓到回到最近检查点。
+3. 谜题：画像顺序、撕碎照片拼合、八音盒旋律；集齐 5 页日记可解锁真结局。
+4. 理智值：黑暗与目击会降低理智，低理智时画面色散、暗角、幻听。
+5. 自动存档（`localStorage`）、暂停菜单、手机触控；设置中可「减弱惊吓与闪烁」（系统开启减少动态效果时默认开启）。
+
+画面全部由 Canvas 2D / SVG 程序化绘制，声音全部由 WebAudio 合成，无任何外部资源。
+
 ## 本地打开
 
 克隆后用浏览器直接打开对应 HTML，或任意静态服务器托管本目录。仓库含 `.nojekyll` 以便 Pages 原样发布。
@@ -48,6 +63,7 @@
 |------|------|
 | `dossier.html` | 侦探卷宗 |
 | `forensics.html` | 电脑侦查 |
+| `manor.html` | 灰荆庄园（恐怖） |
 | `.nojekyll` | 禁用 Jekyll 处理 |
 | `README.md` | 本说明 |
 
