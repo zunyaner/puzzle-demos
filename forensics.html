@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>电脑侦查 · 林晓舟的工作站</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1d21;--task:#0c0e10;--win:#2b2f36;--win-title:#1e2228;
+  --accent:#3a7ca5;--text:#e8eaed;--muted:#9aa0a6;--icon:#c5c9ce;
+  --ok:#3d8b6e;--bad:#c44;--sel:#1a73e8;
+}
+html,body{height:100%;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);overflow:hidden;user-select:none}
+#desktop{
+  position:absolute;inset:0 0 40px 0;
+  background:linear-gradient(160deg,#1a2332 0%,#243044 40%,#1c2838 100%);
+  background-image:
+    radial-gradient(ellipse at 70% 20%,rgba(58,124,165,.15),transparent 50%),
+    linear-gradient(160deg,#1a2332,#243044 50%,#15202b);
+  padding:12px;display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;gap:4px;
+  overflow:auto;
+}
+.desk-icon{
+  width:76px;padding:6px 4px;text-align:center;cursor:pointer;border-radius:4px;
+  font-size:11px;color:var(--icon);text-shadow:0 1px 2px #000;
+}
+.desk-icon:hover,.desk-icon.sel{background:rgba(26,115,232,.35)}
+.desk-icon .ico{font-size:28px;line-height:1.2;display:block;margin-bottom:2px}
+#taskbar{
+  position:absolute;left:0;right:0;bottom:0;height:40px;
+  background:rgba(12,14,16,.92);border-top:1px solid #333;
+  display:flex;align-items:center;padding:0 8px;gap:6px;z-index:1000;
+}
+#start-btn{background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:3px;cursor:pointer;font-size:12px;font-family:inherit}
+.tb-app{background:#2b2f36;border:none;color:var(--text);padding:5px 10px;border-radius:3px;font-size:11px;cursor:pointer;font-family:inherit;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-app.active{outline:1px solid var(--accent)}
+#clock{margin-left:auto;font-size:11px;color:var(--muted);padding-right:8px}
+.window{
+  position:absolute;min-width:280px;min-height:180px;
+  background:var(--win);border:1px solid #444;border-radius:6px 6px 0 0;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;flex-direction:column;
+  z-index:10;overflow:hidden;
+}
+.window.focused{z-index:50;border-color:#666}
+.w-title{
+  background:var(--win-title);padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:8px;
+  cursor:move;flex:0 0 auto;border-bottom:1px solid #333;
+}
+.w-title .w-btns{margin-left:auto;display:flex;gap:4px}
+.w-title button{width:28px;height:22px;border:none;border-radius:3px;background:#3a3f48;color:#ccc;cursor:pointer;font-size:11px}
+.w-title button:hover{background:#555}
+.w-title button.close:hover{background:#c44;color:#fff}
+.w-body{flex:1;overflow:auto;padding:10px;font-size:12px;line-height:1.5;user-select:text}
+.w-toolbar{flex:0 0 auto;background:#23262b;padding:4px 8px;font-size:11px;color:var(--muted);border-bottom:1px solid #333;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.file-row{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;
+}
+.file-row:hover{background:rgba(255,255,255,.06)}
+.file-row .meta{margin-left:auto;color:var(--muted);font-size:10px}
+.mail-item{padding:8px;border-bottom:1px solid #333;cursor:pointer}
+.mail-item:hover{background:rgba(255,255,255,.05)}
+.mail-item .from{font-weight:600}
+.mail-item .subj{color:var(--muted)}
+.mail-item.unread .from{color:#7ec8e3}
+.chat-msg{margin:6px 0;max-width:85%}
+.chat-msg.me{margin-left:auto;background:#1a4a6e;padding:6px 10px;border-radius:8px 8px 2px 8px}
+.chat-msg.them{background:#333840;padding:6px 10px;border-radius:8px 8px 8px 2px}
+.chat-time{font-size:10px;color:var(--muted);margin-top:2px}
+.sticky{
+  position:absolute;width:160px;min-height:120px;background:#f5e6a8;color:#333;
+  padding:12px;font-size:12px;box-shadow:2px 2px 8px rgba(0,0,0,.4);
+  cursor:move;z-index:5;font-family:"Comic Sans MS","PingFang SC",sans-serif;line-height:1.4;
+  user-select:text;
+}
+.hist-row{padding:4px 0;border-bottom:1px solid #333;font-size:11px}
+.hist-row a{color:#7ec8e3;text-decoration:none}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px;text-align:center}
+.cal-grid .day{padding:6px 2px;background:#23262b;border-radius:2px}
+.cal-grid .day.mark{background:#3a5a40;color:#b8e0c0}
+.cal-grid .hd{color:var(--muted);padding:4px}
+input.pw,textarea.concl{
+  width:100%;padding:8px;background:#1a1d21;border:1px solid #555;color:var(--text);
+  border-radius:3px;font-family:inherit;font-size:13px;
+}
+textarea.concl{min-height:80px;resize:vertical}
+.btn{
+  appearance:none;border:1px solid #555;background:#3a3f48;color:var(--text);
+  padding:6px 12px;border-radius:3px;cursor:pointer;font-size:12px;font-family:inherit;
+}
+.btn.primary{background:var(--accent);border-color:#2a5a7a}
+.btn:hover{filter:brightness(1.1)}
+#toast{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:2000;
+  background:#111;color:#eee;padding:10px 16px;border-radius:4px;font-size:13px;
+  opacity:0;pointer-events:none;transition:opacity .25s;border:1px solid #444;max-width:90%;text-align:center;
+}
+#toast.show{opacity:1}
+#intro{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:3000;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+#intro .card{
+  background:#2b2f36;max-width:480px;padding:24px;border-radius:8px;border:1px solid #555;
+}
+#intro h1{font-size:18px;margin-bottom:10px}
+#intro p{font-size:13px;line-height:1.65;margin-bottom:10px;color:#ccc}
+#overlay-modal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2500;
+  align-items:center;justify-content:center;padding:16px;
+}
+#overlay-modal.show{display:flex}
+.modal-box{background:#2b2f36;padding:20px;border-radius:8px;max-width:440px;width:100%;border:1px solid #555}
+.modal-box h2{font-size:15px;margin-bottom:10px}
+.field-ok{border-color:var(--ok)!important}
+.field-bad{border-color:var(--bad)!important}
+.hint{font-size:11px;margin-top:4px}
+.hint.ok{color:var(--ok)}.hint.bad{color:#f88}
+@media(max-width:600px){
+  .desk-icon{width:64px;font-size:10px}
+  .desk-icon .ico{font-size:24px}
+  .window{max-width:96vw!important}
+}
+</style>
+</head>
+<body>
+<div id="desktop"></div>
+<div id="taskbar">
+  <button id="start-btn">开始</button>
+  <div id="tb-apps"></div>
+  <div id="clock"></div>
+</div>
+<div id="toast"></div>
+<div id="overlay-modal"></div>
+<div id="intro">
+  <div class="card">
+    <h1>🖥 电脑侦查</h1>
+    <p><strong>任务简报</strong><br>
+    锦科软件研发部工程师<strong>林晓舟</strong>的工作电脑已被扣押。安保怀疑其向竞争对手「星海科技」泄露核心算法。你需要在这台仿 Windows 桌面上自行翻找：邮件、聊天、浏览器、回收站、加密文件、便签与日历。</p>
+    <p>目标：重建他做了什么——联系了谁、转移/藏匿了什么、大约何时——并提交简短结论文本。</p>
+    <p style="font-size:12px;color:#888">无外部资源 · 进度写入 localStorage · 密码线索就在系统里</p>
+    <button class="btn primary" id="btn-start" style="width:100%;margin-top:8px;padding:10px">进入桌面</button>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+const STORAGE='forensics_linxz_v1';
+const ZIP_PASS='海星1015'; /* clue: sticky + calendar + chat */
+
+const FS={
+  desktop:[
+    {id:'docs',type:'folder',name:'我的文档',icon:'📁'},
+    {id:'mail',type:'app',name:'邮件',icon:'📧'},
+    {id:'chat',type:'app',name:'即时通',icon:'💬'},
+    {id:'browser',type:'app',name:'浏览器',icon:'🌐'},
+    {id:'calendar',type:'app',name:'日历',icon:'📅'},
+    {id:'recycle',type:'folder',name:'回收站',icon:'🗑'},
+    {id:'secret',type:'locked',name:'项目备份.zip',icon:'📦'},
+    {id:'report',type:'app',name:'提交结论',icon:'📝'},
+    {id:'sticky1',type:'sticky',name:'便签',icon:'🗒'}
+  ],
+  docs:[
+    {id:'readme',type:'text',name:'工作备忘.txt',icon:'📄',
+      content:'本周要交模块联调说明。\n个人笔记勿放公司盘。\n——林'},
+    {id:'img1',type:'image',name:'白板照片.jpg',icon:'🖼',
+      content:'（照片预览）会议室白板，隐约可见「API_KEY=sk_live_…」字样被擦了一半。',
+      exif:'拍摄时间：2026-10-15 19:42:08\n设备：Pixel-ish CAM\nGPS：约 锦科大厦 附近\n软件：已剥离缩略图'},
+    {id:'sheet',type:'text',name:'差旅报销.csv',icon:'📊',
+      content:'日期,项目,金额\n2026-10-10,地铁,8\n2026-10-14,餐饮（客户）,326\n备注：10/14 所谓客户餐——当日日程无客户拜访'}
+  ],
+  recycle:[
+    {id:'del1',type:'text',name:'to_星海_草稿.txt',icon:'📄',
+      content:'陈经理：\n按约定，核心排序模块我周五晚拷出。U盘放在旧键盘盒。口令你懂的，跟上次茶话会那天。\n晓舟\n（已删除，可还原查看）',
+      deleted:true},
+    {id:'del2',type:'text',name:'shred_note.txt',icon:'📄',
+      content:'用完记得清回收站和最近文件。浏览器无痕不够。',
+      deleted:true}
+  ]
+};
+
+const MAILS=[
+  {id:'m1',from:'hr@jinco.local',subj:'十月考勤提醒',date:'10/10 09:12',body:'请各部门注意打卡。',unread:false},
+  {id:'m2',from:'linxz@jinco.local',to:'lin.xz.home@mail.example',subj:'转发：联调文档（个人备份）',date:'10/15 18:05',
+    body:'发到自己邮箱备份一下。附件：algo_core_v3.patch（约 2.1MB）\n——其实是拷回家的借口。',unread:true},
+  {id:'m3',from:'pm@jinco.local',subj:'星海科技竞标动态',date:'10/13 11:20',
+    body:'市场部通报：星海科技近期频繁挖人，注意保密协议。',unread:false},
+  {id:'m4',from:'unknown@boxmail.example',subj:'Re: 茶话会',date:'10/14 21:33',
+    body:'晓舟：茶话会很愉快。15 号晚上见。口令还是「海」开头那个，日期用见面那天。—陈',unread:true}
+];
+
+const CHATS=[
+  {who:'them',text:'周五方便吗？老地方。',time:'10/14 20:10'},
+  {who:'me',text:'可以。资料我整理好了。',time:'10/14 20:12'},
+  {who:'them',text:'口令别发聊天里。日历上你标了就行。',time:'10/14 20:13'},
+  {who:'me',text:'嗯，海星那个。',time:'10/14 20:14'},
+  {who:'them',text:'收到。U盘不要写星海字样。',time:'10/14 20:15'},
+  {who:'me',text:'懂。键盘盒。',time:'10/14 20:16'}
+];
+const CHAT_CONTACT='小雨';
+
+const HISTORY=[
+  {t:'10/15 17:55',url:'https://search.local/q=USB%E6%97%A0%E7%97%95%E8%BF%B9%E6%8B%B7%E8%B4%9D',title:'搜索：USB无痕拷贝'},
+  {t:'10/15 18:10',url:'https://xinghai-tech.example/careers',title:'星海科技 · 招聘'},
+  {t:'10/15 18:22',url:'https://tools.local/file-shredder',title:'文件粉碎机下载'},
+  {t:'10/15 19:50',url:'https://mail.example/',title:'个人邮箱登录'},
+  {t:'10/12 12:01',url:'https://news.local/tech',title:'科技新闻'}
+];
+
+let state={
+  recovered:[],
+  zipUnlocked:false,
+  zipOpened:false,
+  stickyPos:{x:200,y:80},
+  openWins:{},
+  conclusionDone:false
+};
+
+function toast(m,ms){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),ms||2800)}
+function save(){localStorage.setItem(STORAGE,JSON.stringify(state));toast('进度已保存')}
+function load(){
+  const r=localStorage.getItem(STORAGE);
+  if(!r){toast('无存档');return}
+  state=JSON.parse(r);
+  renderDesktop();
+  toast('已读档');
+}
+function autoSave(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch(e){}}
+
+function tickClock(){
+  const d=new Date();
+  document.getElementById('clock').textContent=
+    d.toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+setInterval(tickClock,1000);tickClock();
+
+let zCounter=10;
+function focusWin(el){
+  document.querySelectorAll('.window').forEach(w=>w.classList.remove('focused'));
+  el.classList.add('focused');
+  el.style.zIndex=++zCounter;
+  document.querySelectorAll('.tb-app').forEach(b=>b.classList.toggle('active',b.dataset.wid===el.dataset.wid));
+}
+
+function makeWindow(id,title,bodyHtml,opts){
+  opts=opts||{};
+  closeWin(id);
+  const desk=document.getElementById('desktop');
+  const w=document.createElement('div');
+  w.className='window focused';
+  w.dataset.wid=id;
+  const W=Math.min(opts.w||420, window.innerWidth-20);
+  const H=Math.min(opts.h||360, window.innerHeight-80);
+  w.style.width=W+'px';
+  w.style.height=H+'px';
+  w.style.left=(opts.x!=null?opts.x:40+Object.keys(state.openWins).length*24)+'px';
+  w.style.top=(opts.y!=null?opts.y:40+Object.keys(state.openWins).length*20)+'px';
+  w.innerHTML=`<div class="w-title"><span>${title}</span>
+    <div class="w-btns"><button type="button" data-min>_</button><button type="button" class="close" data-close>×</button></div></div>
+    ${opts.toolbar?`<div class="w-toolbar">${opts.toolbar}</div>`:''}
+    <div class="w-body">${bodyHtml}</div>`;
+  desk.appendChild(w);
+  state.openWins[id]=true;
+  focusWin(w);
+  updateTaskbar();
+  w.addEventListener('mousedown',()=>focusWin(w));
+  w.querySelector('[data-close]').onclick=()=>closeWin(id);
+  w.querySelector('[data-min]').onclick=()=>{w.style.display='none'};
+  // drag
+  const titleEl=w.querySelector('.w-title');
+  let sx,sy,ox,oy;
+  titleEl.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button'))return;
+    titleEl.setPointerCapture(e.pointerId);
+    sx=e.clientX;sy=e.clientY;
+    ox=parseInt(w.style.left)||0;oy=parseInt(w.style.top)||0;
+    const move=ev=>{w.style.left=Math.max(0,ox+ev.clientX-sx)+'px';w.style.top=Math.max(0,oy+ev.clientY-sy)+'px'};
+    const up=()=>{titleEl.removeEventListener('pointermove',move);titleEl.removeEventListener('pointerup',up)};
+    titleEl.addEventListener('pointermove',move);
+    titleEl.addEventListener('pointerup',up);
+  });
+  return w;
+}
+function closeWin(id){
+  const el=document.querySelector(`.window[data-wid="${id}"]`);
+  if(el)el.remove();
+  delete state.openWins[id];
+  updateTaskbar();
+}
+function updateTaskbar(){
+  const box=document.getElementById('tb-apps');
+  box.innerHTML='';
+  Object.keys(state.openWins).forEach(id=>{
+    const b=document.createElement('button');
+    b.className='tb-app';
+    b.dataset.wid=id;
+    b.textContent=id;
+    b.onclick=()=>{
+      const el=document.querySelector(`.window[data-wid="${id}"]`);
+      if(!el)return;
+      el.style.display='flex';
+      focusWin(el);
+    };
+    box.appendChild(b);
+  });
+}
+
+function renderDesktop(){
+  const desk=document.getElementById('desktop');
+  // keep windows; rebuild icons & sticky
+  desk.querySelectorAll('.desk-icon,.sticky').forEach(n=>n.remove());
+  FS.desktop.forEach(item=>{
+    if(item.type==='sticky'){
+      const s=document.createElement('div');
+      s.className='sticky';
+      s.style.left=state.stickyPos.x+'px';
+      s.style.top=state.stickyPos.y+'px';
+      s.innerHTML=`<strong>别忘</strong><br>压缩包口令<br>跟茶话会有关<br>「海?1015」<br><span style="font-size:10px;color:#666">——写给自己</span>`;
+      desk.appendChild(s);
+      let sx,sy,ox,oy;
+      s.addEventListener('pointerdown',e=>{
+        if(e.target.closest('a'))return;
+        s.setPointerCapture(e.pointerId);
+        sx=e.clientX;sy=e.clientY;ox=state.stickyPos.x;oy=state.stickyPos.y;
+        const move=ev=>{
+          state.stickyPos.x=Math.max(0,ox+ev.clientX-sx);
+          state.stickyPos.y=Math.max(0,oy+ev.clientY-sy);
+          s.style.left=state.stickyPos.x+'px';s.style.top=state.stickyPos.y+'px';
+        };
+        const up=()=>{s.removeEventListener('pointermove',move);s.removeEventListener('pointerup',up);autoSave()};
+        s.addEventListener('pointermove',move);
+        s.addEventListener('pointerup',up);
+      });
+      return;
+    }
+    const d=document.createElement('div');
+    d.className='desk-icon';
+    d.innerHTML=`<span class="ico">${item.icon}</span>${item.name}`;
+    d.ondblclick=()=>openItem(item);
+    d.onclick=e=>{
+      document.querySelectorAll('.desk-icon').forEach(x=>x.classList.remove('sel'));
+      d.classList.add('sel');
+      // mobile: single tap opens
+      if(window.matchMedia('(max-width:720px)').matches) openItem(item);
+    };
+    desk.appendChild(d);
+  });
+}
+
+function openItem(item){
+  if(item.type==='folder') openFolder(item.id,item.name);
+  else if(item.type==='app') openApp(item.id);
+  else if(item.type==='locked') openZip();
+}
+
+function openFolder(fid,title){
+  let files=FS[fid]?FS[fid].slice():[];
+  if(fid==='recycle'){
+    /* show deleted; recovered still listed */
+  }
+  if(fid==='docs' && state.zipOpened){
+    files=files.concat([
+      {id:'algo',type:'text',name:'algo_core_v3.patch',icon:'📄',
+        content:'diff --git a/sort_core.c\n（核心排序模块补丁，含未公开优化参数）\n导出时间戳注释：2026-10-15T19:30:00+08:00'}
+    ]);
+  }
+  let html=files.map(f=>`<div class="file-row" data-fid="${f.id}" data-parent="${fid}">
+    <span>${f.icon||'📄'}</span><span>${f.name}${f.deleted?' <em style="color:#c88">(已删除)</em>':''}</span>
+    <span class="meta">${f.deleted?'可还原':''}</span></div>`).join('')||'<p style="color:#888">空文件夹</p>';
+  if(fid==='recycle') html+=`<p style="margin-top:10px;color:#888;font-size:11px">提示：双击/点击文件可查看内容；已删除文件直接可读（模拟取证还原）。</p>`;
+  const w=makeWindow(fid,title,html,{w:400,h:320});
+  w.querySelectorAll('.file-row').forEach(row=>{
+    row.onclick=()=>{
+      const id=row.dataset.fid;
+      const parent=row.dataset.parent;
+      const f=(FS[parent]||[]).find(x=>x.id===id) ||
+        (state.zipOpened&&id==='algo'?{id:'algo',type:'text',name:'algo_core_v3.patch',
+          content:'diff --git a/sort_core.c\n（核心排序模块补丁，含未公开优化参数）\n导出时间戳注释：2026-10-15T19:30:00+08:00'}:null);
+      if(!f)return;
+      if(f.deleted && !state.recovered.includes(f.id)){
+        state.recovered.push(f.id);autoSave();toast('已从回收站还原查看：'+f.name);
+      }
+      openFile(f);
+    };
+  });
+}
+
+function openFile(f){
+  let body=`<pre style="white-space:pre-wrap;font-family:inherit">${esc(f.content||'')}</pre>`;
+  if(f.exif){
+    body+=`<hr style="border-color:#444;margin:12px 0"><p><strong>元数据 / EXIF 备注</strong></p><pre style="white-space:pre-wrap;color:#9cf;font-family:inherit">${esc(f.exif)}</pre>`;
+  }
+  makeWindow('file-'+f.id,f.name,body,{w:400,h:340});
+}
+
+function esc(s){return String(s).replace(/[&<>]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]))}
+
+function openApp(id){
+  if(id==='mail') openMail();
+  else if(id==='chat') openChat();
+  else if(id==='browser') openBrowser();
+  else if(id==='calendar') openCalendar();
+  else if(id==='report') openReport();
+}
+
+function openMail(){
+  const list=MAILS.map(m=>`<div class="mail-item ${m.unread?'unread':''}" data-mid="${m.id}">
+    <div class="from">${esc(m.from)} · ${m.date}</div>
+    <div class="subj">${esc(m.subj)}</div></div>`).join('');
+  const w=makeWindow('mail','邮件客户端',`<div id="mail-list">${list}</div><div id="mail-view" style="display:none"></div>`,{w:460,h:400,
+    toolbar:'<button class="btn" id="mail-back" style="display:none">← 返回</button><span>收件箱</span>'});
+  const showList=()=>{
+    w.querySelector('#mail-list').style.display='block';
+    w.querySelector('#mail-view').style.display='none';
+    w.querySelector('#mail-back').style.display='none';
+  };
+  w.querySelector('#mail-back').onclick=showList;
+  w.querySelectorAll('.mail-item').forEach(el=>{
+    el.onclick=()=>{
+      const m=MAILS.find(x=>x.id===el.dataset.mid);
+      w.querySelector('#mail-list').style.display='none';
+      w.querySelector('#mail-back').style.display='inline-block';
+      const v=w.querySelector('#mail-view');
+      v.style.display='block';
+      v.innerHTML=`<p><strong>${esc(m.subj)}</strong></p>
+        <p style="color:#888">发件人：${esc(m.from)}${m.to?'<br>收件人：'+esc(m.to):''}<br>${m.date}</p>
+        <hr style="border-color:#444;margin:8px 0">
+        <pre style="white-space:pre-wrap;font-family:inherit">${esc(m.body)}</pre>`;
+    };
+  });
+}
+
+function openChat(){
+  const msgs=CHATS.map(c=>`<div class="chat-msg ${c.who}"><div>${esc(c.text)}</div><div class="chat-time">${c.time}</div></div>`).join('');
+  makeWindow('chat','即时通 — '+CHAT_CONTACT,
+    `<p style="color:#888;margin-bottom:8px">会话：${CHAT_CONTACT}（备注为空，头像默认）</p>${msgs}`,
+    {w:380,h:420});
+}
+
+function openBrowser(){
+  const rows=HISTORY.map(h=>`<div class="hist-row"><span style="color:#888">${h.t}</span><br><a href="javascript:void(0)">${esc(h.title)}</a><br><span style="color:#666">${esc(h.url)}</span></div>`).join('');
+  makeWindow('browser','浏览器 — 历史记录',
+    `<p style="margin-bottom:8px">最近访问</p>${rows}`,
+    {w:440,h:380,toolbar:'地址栏：<span style="color:#aaa">about:history</span>'});
+}
+
+function openCalendar(){
+  const days=['一','二','三','四','五','六','日'];
+  let grid=days.map(d=>`<div class="hd">${d}</div>`).join('');
+  // Oct 2026 starts Thursday= index 3 if Mon-first
+  for(let i=0;i<3;i++) grid+=`<div class="day"></div>`;
+  for(let d=1;d<=31;d++){
+    const mark=d===15?' mark':'';
+    const note=d===15?' title="晚：交付"':'';
+    grid+=`<div class="day${mark}"${note}>${d}${d===15?'<br>★交付':''}</div>`;
+  }
+  makeWindow('calendar','日历 — 2026年10月',
+    `<div class="cal-grid">${grid}</div>
+     <p style="margin-top:12px"><strong>10月15日</strong>：晚 · 交付（私密）</p>
+     <p style="color:#888;font-size:11px">月视图备注仅自己可见。与聊天中「日历上你标了」吻合。</p>`,
+    {w:360,h:340});
+}
+
+function openZip(){
+  if(state.zipUnlocked){
+    showZipContent();
+    return;
+  }
+  const bg=document.getElementById('overlay-modal');
+  bg.className='show';
+  bg.innerHTML=`<div class="modal-box">
+    <h2>📦 项目备份.zip — 需要密码</h2>
+    <p style="font-size:12px;color:#aaa;margin-bottom:8px">加密压缩包。线索可能在便签、邮件、聊天或日历中。</p>
+    <input class="pw" id="zip-pw" type="text" placeholder="输入密码" autocomplete="off">
+    <p class="hint" id="zip-hint"></p>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn primary" id="zip-ok">解锁</button>
+      <button class="btn" id="zip-cancel">取消</button>
+    </div>
+  </div>`;
+  bg.querySelector('#zip-cancel').onclick=()=>{bg.className='';bg.innerHTML=''};
+  bg.onclick=e=>{if(e.target===bg){bg.className='';bg.innerHTML=''}};
+  bg.querySelector('#zip-ok').onclick=()=>{
+    const v=document.getElementById('zip-pw').value.trim();
+    const hint=document.getElementById('zip-hint');
+    if(v===ZIP_PASS || v.toLowerCase()===ZIP_PASS.toLowerCase()){
+      state.zipUnlocked=true;autoSave();
+      bg.className='';bg.innerHTML='';
+      toast('压缩包已解锁');
+      showZipContent();
+    }else{
+      hint.textContent='密码错误';hint.className='hint bad';
+      toast('密码错误',2000);
+    }
+  };
+}
+
+function showZipContent(){
+  state.zipOpened=true;autoSave();
+  makeWindow('zip','项目备份.zip',
+    `<p>已解密文件列表：</p>
+     <div class="file-row" id="zip-algo"><span>📄</span> algo_core_v3.patch</div>
+     <div class="file-row" id="zip-note"><span>📄</span> readme_交付.txt</div>
+     <p style="margin-top:10px;color:#8c8">文件已同步出现在「我的文档」视图（重新打开可见）。</p>`,
+    {w:380,h:280});
+  setTimeout(()=>{
+    const w=document.querySelector('.window[data-wid="zip"]');
+    if(!w)return;
+    w.querySelector('#zip-algo').onclick=()=>openFile({id:'algo',name:'algo_core_v3.patch',
+      content:'diff --git a/sort_core.c\n（核心排序模块补丁，含未公开优化参数）\n导出时间戳注释：2026-10-15T19:30:00+08:00'});
+    w.querySelector('#zip-note').onclick=()=>openFile({id:'zipnote',name:'readme_交付.txt',
+      content:'给陈经理：\n模块按约定交付。U盘在我工位旧键盘包装盒夹层。\n口令规则：海星 + 会面日（1015）。\n销毁本目录前请确认对方已校验 hash。'});
+  },0);
+}
+
+const ANS={
+  who:['小雨','陈经理','星海','陈'],
+  what:['算法','补丁','algo','源码','排序','U盘','核心'],
+  when:['10/15','10月15','15日','19:','周五','十五']
+};
+
+function openReport(){
+  const bg=document.getElementById('overlay-modal');
+  bg.className='show';
+  bg.innerHTML=`<div class="modal-box">
+    <h2>提交侦查结论</h2>
+    <p style="font-size:12px;color:#aaa">自由文本。系统检查是否涵盖：联系人、转移物、时间。不公布标准答案。</p>
+    <label style="font-size:12px;display:block;margin:8px 0 4px">他联系了谁？（对方/组织）</label>
+    <input class="pw" id="c-who" placeholder="姓名或组织">
+    <div class="hint" id="h-who"></div>
+    <label style="font-size:12px;display:block;margin:8px 0 4px">偷带 / 藏匿了什么？</label>
+    <input class="pw" id="c-what" placeholder="物品或数据">
+    <div class="hint" id="h-what"></div>
+    <label style="font-size:12px;display:block;margin:8px 0 4px">大约何时？</label>
+    <input class="pw" id="c-when" placeholder="日期或时段">
+    <div class="hint" id="h-when"></div>
+    <label style="font-size:12px;display:block;margin:8px 0 4px">补充说明（可选）</label>
+    <textarea class="concl" id="c-extra" placeholder="例如交付方式、藏匿位置…"></textarea>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" id="c-go">提交</button>
+      <button class="btn" id="c-save">存档</button>
+      <button class="btn" id="c-cancel">关闭</button>
+    </div>
+    <p id="c-res" style="margin-top:10px;font-size:12px"></p>
+  </div>`;
+  bg.querySelector('#c-cancel').onclick=()=>{bg.className='';bg.innerHTML=''};
+  bg.onclick=e=>{if(e.target===bg){bg.className='';bg.innerHTML=''}};
+  bg.querySelector('#c-save').onclick=save;
+  bg.querySelector('#c-go').onclick=()=>{
+    const checks=[
+      {k:'who',el:'c-who',h:'h-who'},
+      {k:'what',el:'c-what',h:'h-what'},
+      {k:'when',el:'c-when',h:'h-when'}
+    ];
+    let ok=0;
+    checks.forEach(c=>{
+      const val=document.getElementById(c.el).value.trim();
+      const hit=ANS[c.k].some(a=>val.replace(/\s/g,'').toLowerCase().includes(a.toLowerCase()));
+      const input=document.getElementById(c.el);
+      const hint=document.getElementById(c.h);
+      input.classList.remove('field-ok','field-bad');
+      if(hit){ok++;input.classList.add('field-ok');hint.className='hint ok';hint.textContent='✓ 通过'}
+      else{input.classList.add('field-bad');hint.className='hint bad';hint.textContent='✗ 未命中关键信息'}
+    });
+    const res=document.getElementById('c-res');
+    if(ok===3){
+      state.conclusionDone=true;autoSave();
+      res.innerHTML='<strong style="color:#3d8b6e">结论成立。</strong>林晓舟通过即时通联系化名「小雨」（星海陈经理），于 10月15日晚将核心算法补丁拷出，加密包口令「海星1015」，实物 U 盘藏于工位旧键盘盒；回收站与邮件可互相印证。';
+      toast('侦查完成',3500);
+    }else res.textContent=`通过 ${ok}/3。请继续翻查桌面后修正。`;
+  };
+}
+
+document.getElementById('btn-start').onclick=()=>{
+  document.getElementById('intro').style.display='none';
+  renderDesktop();
+};
+document.getElementById('start-btn').onclick=()=>{
+  const bg=document.getElementById('overlay-modal');
+  bg.className='show';
+  bg.innerHTML=`<div class="modal-box">
+    <h2>开始菜单</h2>
+    <p style="font-size:12px;margin-bottom:8px">快捷方式</p>
+    <button class="btn" id="sm-save" style="margin:4px">💾 保存进度</button>
+    <button class="btn" id="sm-load" style="margin:4px">📂 读取进度</button>
+    <button class="btn" id="sm-help" style="margin:4px">❓ 说明</button>
+    <button class="btn" id="sm-close" style="margin:4px">关闭</button>
+  </div>`;
+  bg.querySelector('#sm-close').onclick=()=>{bg.className='';bg.innerHTML=''};
+  bg.querySelector('#sm-save').onclick=()=>{save();bg.className='';bg.innerHTML=''};
+  bg.querySelector('#sm-load').onclick=()=>{load();bg.className='';bg.innerHTML=''};
+  bg.querySelector('#sm-help').onclick=()=>{
+    bg.innerHTML=`<div class="modal-box"><h2>说明</h2>
+      <p style="font-size:13px;line-height:1.6">双击（手机单击）桌面图标打开应用。翻查邮件、聊天、历史、回收站、便签与日历，拼出口令后打开加密包。最后用「提交结论」作答。进度在开始菜单存取。</p>
+      <button class="btn primary" id="sm-ok">好</button></div>`;
+    bg.querySelector('#sm-ok').onclick=()=>{bg.className='';bg.innerHTML=''};
+  };
+};
+
+window.__forensics={
+  state,ZIP_PASS,MAILS,CHATS,ANS,openZip,openMail,openChat,openBrowser,openCalendar,openFolder,openReport,save,load,renderDesktop,
+  tryPassword(p){
+    if(p===ZIP_PASS||p.toLowerCase()===ZIP_PASS.toLowerCase()){state.zipUnlocked=true;state.zipOpened=true;autoSave();return true}
+    return false;
+  },
+  getState:()=>state
+};
+})();
+</script>
+</body>
+</html>

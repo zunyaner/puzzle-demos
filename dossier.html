@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>侦探卷宗 · 云栖公寓 9-1502</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cork:#c4a574;--cork2:#b8956a;--paper:#f7f1e3;--ink:#2c2416;
+  --pin-red:#c0392b;--pin-blue:#2980b9;--pin-gold:#d4a017;
+  --desk:#5c4033;--muted:#7a6a55;--ok:#2d6a4f;--bad:#9b2226;
+  --link:#1d3557;--contra:#9b2226;
+}
+html,body{height:100%;font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:#3d2b1f;color:var(--ink);overflow:hidden}
+body{display:flex;flex-direction:column}
+header{
+  flex:0 0 auto;background:linear-gradient(180deg,#2a1c14,#3d2b1f);
+  color:#f0e6d2;padding:10px 14px;display:flex;align-items:center;gap:10px;
+  border-bottom:3px solid #1a120c;flex-wrap:wrap;z-index:50;
+}
+header h1{font-size:16px;font-weight:700;letter-spacing:.05em}
+header .sub{font-size:11px;opacity:.75;flex:1;min-width:120px}
+.btn{
+  appearance:none;border:1px solid #8b7355;background:#4a3426;color:#f0e6d2;
+  padding:6px 12px;border-radius:4px;font-size:12px;cursor:pointer;
+  font-family:inherit;white-space:nowrap;
+}
+.btn:hover{background:#5c4033}
+.btn.primary{background:#6b4423;border-color:#c9a86c;color:#fff8e7}
+.btn.danger{background:#5c1a1a;border-color:#a94442}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+main{flex:1;display:flex;min-height:0;position:relative}
+#tray{
+  flex:0 0 200px;background:#2a1c14;border-right:2px solid #1a120c;
+  overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px;
+}
+#tray h2{color:#c9a86c;font-size:12px;padding:4px 2px;letter-spacing:.1em}
+.tray-card{
+  background:var(--paper);border:1px solid #c9b896;border-radius:2px;
+  padding:8px;cursor:grab;font-size:11px;box-shadow:1px 2px 0 #1a120c;
+  position:relative;user-select:none;touch-action:none;
+}
+.tray-card:active{cursor:grabbing}
+.tray-card .tag{
+  display:inline-block;font-size:9px;padding:1px 5px;border-radius:2px;
+  background:#e8dcc8;color:#5c4033;margin-bottom:4px;
+}
+.tray-card.pinned-away{opacity:.35;pointer-events:none}
+#board-wrap{flex:1;position:relative;overflow:auto;background:
+  radial-gradient(circle at 20% 30%,rgba(0,0,0,.06) 1px,transparent 1px),
+  radial-gradient(circle at 70% 60%,rgba(0,0,0,.05) 1px,transparent 1px),
+  linear-gradient(135deg,var(--cork) 0%,var(--cork2) 50%,#b08968 100%);
+  background-size:24px 24px,32px 32px,auto;
+  min-height:100%;
+}
+#board{position:relative;min-width:100%;min-height:100%;width:1100px;height:800px}
+.pin-card{
+  position:absolute;width:200px;background:var(--paper);border:1px solid #b8a888;
+  box-shadow:2px 3px 6px rgba(0,0,0,.35);padding:10px 10px 12px;cursor:move;
+  font-size:11px;line-height:1.45;z-index:2;touch-action:none;user-select:none;
+}
+.pin-card .pin{
+  position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ff6b6b,var(--pin-red));
+  box-shadow:0 2px 3px rgba(0,0,0,.4);border:1px solid #7a1f1a;
+}
+.pin-card.selected{outline:2px solid var(--pin-gold);z-index:10}
+.pin-card .ptype{font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:.05em}
+.pin-card h3{font-size:12px;margin-bottom:6px;border-bottom:1px dashed #c9b896;padding-bottom:4px}
+.pin-card .body{max-height:140px;overflow-y:auto;color:#3a3020}
+.pin-card .actions{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+.pin-card .actions button{font-size:10px;padding:3px 6px}
+.pin-card .thumb{width:100%;height:70px;margin:4px 0;border:1px solid #d4c4a8;background:#e8e0d0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pin-card .thumb svg{width:100%;height:100%}
+#svg-links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.link-line{stroke-width:2;fill:none;stroke-dasharray:4 3}
+.link-line.assoc{stroke:var(--link)}
+.link-line.contra{stroke:var(--contra)}
+#pair-bar{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  background:rgba(42,28,20,.92);color:#f0e6d2;padding:10px 14px;border-radius:8px;
+  display:none;gap:8px;align-items:center;z-index:40;flex-wrap:wrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);font-size:12px;max-width:95%;
+}
+#pair-bar.show{display:flex}
+#toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:#2a1c14;color:#f0e6d2;padding:10px 18px;border-radius:6px;
+  font-size:13px;z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;
+  max-width:90%;text-align:center;border:1px solid #c9a86c;
+}
+#toast.show{opacity:1}
+#modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;
+  align-items:center;justify-content:center;padding:16px;
+}
+#modal-bg.show{display:flex}
+.modal{
+  background:var(--paper);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;
+  border-radius:4px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  border:2px solid #8b7355;
+}
+.modal h2{font-size:16px;margin-bottom:10px;border-bottom:2px solid #c9b896;padding-bottom:6px}
+.modal p,.modal li{font-size:13px;line-height:1.6;margin-bottom:8px}
+.modal label{display:block;font-size:12px;font-weight:600;margin:10px 0 4px;color:#5c4033}
+.modal input,.modal textarea{
+  width:100%;padding:8px;border:1px solid #c9b896;border-radius:3px;
+  font-family:inherit;font-size:13px;background:#fffef8;
+}
+.modal textarea{min-height:56px;resize:vertical}
+.field-ok{border-color:var(--ok)!important;background:#e8f5e9!important}
+.field-bad{border-color:var(--bad)!important;background:#fce8e8!important}
+.field-hint{font-size:11px;margin-top:2px}
+.field-hint.ok{color:var(--ok)}
+.field-hint.bad{color:var(--bad)}
+#intro{position:fixed;inset:0;background:rgba(30,20,12,.92);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}
+#intro .card{background:var(--paper);max-width:480px;padding:24px;border-radius:4px;border:3px double #8b7355}
+#intro h1{font-size:20px;margin-bottom:8px}
+#intro p{font-size:13px;line-height:1.65;margin-bottom:10px}
+#status-bar{
+  flex:0 0 auto;background:#1a120c;color:#c9a86c;font-size:11px;
+  padding:4px 12px;display:flex;gap:16px;flex-wrap:wrap;
+}
+@media(max-width:720px){
+  main{flex-direction:column}
+  #tray{flex:0 0 auto;max-height:130px;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:2px solid #1a120c}
+  #tray h2{writing-mode:vertical-rl;flex-shrink:0}
+  .tray-card{min-width:140px;max-width:160px}
+  #board{width:900px;height:700px}
+  .pin-card{width:160px;font-size:10px}
+  header h1{font-size:14px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>📂 侦探卷宗</h1>
+  <span class="sub">云栖公寓 9-1502 · 方予安遇害案</span>
+  <button class="btn" id="btn-help">说明</button>
+  <button class="btn" id="btn-save">存档</button>
+  <button class="btn" id="btn-load">读档</button>
+  <button class="btn primary" id="btn-report">提交结案报告</button>
+</header>
+<main>
+  <aside id="tray">
+    <h2>证据堆</h2>
+    <div id="tray-list"></div>
+  </aside>
+  <div id="board-wrap">
+    <div id="board">
+      <svg id="svg-links"></svg>
+    </div>
+    <div id="pair-bar">
+      <span id="pair-label">已选两份证据</span>
+      <button class="btn" id="btn-assoc">标记「关联」</button>
+      <button class="btn danger" id="btn-contra">标记「矛盾」</button>
+      <button class="btn" id="btn-cancel-pair">取消</button>
+    </div>
+  </div>
+</main>
+<div id="status-bar">
+  <span id="st-pinned">已钉：0</span>
+  <span id="st-links">已标记：0</span>
+  <span id="st-unlocked">解锁文档：0</span>
+  <span id="st-hint">提示：将证据钉到软木板上，点选两份标记关联或矛盾</span>
+</div>
+<div id="toast"></div>
+<div id="modal-bg"></div>
+<div id="intro">
+  <div class="card">
+    <h1>云栖公寓 · 9-1502</h1>
+    <p><strong>案情简述</strong><br>
+    2026年10月12日（周日）晚，软件工程师<strong>方予安</strong>被发现死于云栖公寓 9-1502 书房，后脑钝器伤，现场有翻动痕迹。保险箱内现金未动，唯独少了一枚黑色 U 盘。表面像入室抢劫，但诸多细节不合。</p>
+    <p><strong>你的任务</strong><br>
+    把证据钉上软木板，自行比对两份材料，标记「关联」或「矛盾」。正确比对会解锁新材料。全部关键线索理清后，用自由文本写出：凶手是谁、何时、如何、为何。</p>
+    <p style="font-size:12px;color:#7a6a55">无选项提示 · 进度自动可存档 · 纯本地运行</p>
+    <button class="btn primary" id="btn-start" style="margin-top:12px;width:100%;padding:10px">开始侦办</button>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+const STORAGE_KEY='dossier_yunqi_v1';
+
+/* ===== Case data (original) ===== */
+const EVIDENCE={
+  e01:{id:'e01',type:'现场照片',title:'书房现场示意',
+    body:'书房书桌翻乱。地面有碎瓷片（原为绿釉花瓶）。死者趴伏桌前，后脑有钝器伤。保险箱半开，现金约八千仍在，黑色 U 盘槽位空。窗未破，门锁无撬痕。',
+    svg:`<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="80" fill="#d9cfc0"/>
+      <rect x="10" y="20" width="70" height="40" fill="#8b7355" stroke="#5c4033"/>
+      <circle cx="120" cy="50" r="12" fill="#6b4423" opacity=".5"/>
+      <text x="100" y="18" font-size="8" fill="#5c4033">9-1502 书房</text>
+      <polygon points="150,55 160,40 170,58" fill="#7a8b6e" opacity=".7"/>
+      <text x="140" y="72" font-size="7" fill="#9b2226">碎瓷片</text>
+    </svg>`,
+    start:true},
+  e02:{id:'e02',type:'笔录',title:'女友苏晴陈述',
+    body:'「我和予安恋爱两年。10月12日我一直在公司加班到晚上十点，没去过公寓。最近他压力大，说公司有人做假账。他有时会把重要东西拷进 U 盘自己保管。」',
+    start:true},
+  e03:{id:'e03',type:'门禁记录',title:'公寓大门门禁',
+    body:'10月12日 9-1502 相关刷卡/访客：\n18:42 方予安 进\n19:31 苏晴 出（持方予安副卡）\n20:15 访客「陆远」登记进\n20:38 访客「陆远」出\n21:05 外卖柜取件（方予安手机开柜）\n22:50 物业巡楼发现异常报警',
+    start:true},
+  e04:{id:'e04',type:'聊天记录',title:'方予安↔陆远 微信',
+    body:'10/11 21:03 陆远：钥匙我还你了哈，备用的也在门口脚垫下那套里，你记得收。\n10/12 14:20 方予安：周末你还在外地吗？\n10/12 14:22 陆远：嗯，出差到周三才回，有事语音。',
+    start:true},
+  e05:{id:'e05',type:'监控时间轴',title:'一楼大厅 CCTV 摘要',
+    body:'20:12 戴帽男子（体型似陆远）从侧门进入，未正脸。\n20:37 同一男子快步离开。\n20:41 穿深色外套男子（身高约178）从正门进，右手插袋，未登记（尾随业主）。\n21:12 该深色外套男子正门出，步履匆忙。',
+    start:true},
+  e06:{id:'e06',type:'小票',title:'云栖便利店小票',
+    body:'云栖便利店 · 10月12日 20:28\n一次性丁腈手套 ×1  ¥6.00\n矿泉水 ×1  ¥2.00\n支付：微信支付 *明\n柜员备注：戴眼镜男，约三十岁',
+    start:true},
+  e07:{id:'e07',type:'笔录',title:'邻居王婶陈述',
+    body:'「晚上八点多我出来扔垃圾，看见陆远从电梯出来，跟我打了招呼，说取个东西马上走。九点前后隐约听见 1502 有东西摔碎，以为人家搬家，没管。」',
+    start:true},
+  e08:{id:'e08',type:'笔录',title:'同事何明陈述',
+    body:'「我当晚在公司加班写周报，打卡到 22:00。和方予安是一组的，最近在争一个组长名额，但我们关系还行。不知道什么 U 盘。」',
+    start:true},
+  /* unlocked later */
+  e09:{id:'e09',type:'公司门禁',title:'锦科大厦门禁·苏晴',
+    body:'苏晴工卡：10月12日 19:05 出闸，之后无回闸记录。当日加班申请显示「报销整理」，但门禁与陈述「十点才走」不符。',
+    start:false},
+  e10:{id:'e10',type:'行程核验',title:'陆远高铁与通话',
+    body:'陆远 10/12 确有外地出差行程，但其本人称：下午临时回本市取护照，20:15 进公寓只为拿回落在旧房间纸箱里的证件，20:38 离开，之后与方予安无通话。脚垫下备用钥匙——陆远称「我提醒过他收，不知道他还没收」。',
+    start:false},
+  e11:{id:'e11',type:'消费明细',title:'何明微信支付',
+    body:'10月12日 20:28 云栖便利店 ¥8.00（与小票吻合）。\n何明住址距云栖公寓步行 6 分钟。其公司打卡可远程网页补打，系统日志显示 22:00 打卡来自住宅 IP，非公司内网。',
+    start:false},
+  e12:{id:'e12',type:'检索记录',title:'何明工作电脑浏览器',
+    body:'10/12 17:40 搜索：「钝器伤 致死时间」\n10/12 18:10 搜索：「门禁尾随 进小区」\n收藏夹有「个人报销模板」；桌面残留「方_问题清单.txt」删除痕迹（回收站已清空）。',
+    start:false},
+  e13:{id:'e13',type:'物证',title:'U盘与花瓶比对',
+    body:'死者手机备忘： 「证据备份 → 黑U → 周一交内审」。何明工位抽屉发现同型号空盒。花瓶底座指纹：一枚模糊，与何明右手食指纹局部吻合。手套包装袋在公寓楼下垃圾桶。',
+    start:false},
+  e14:{id:'e14',type:'邮件',title:'方予安→内审（未发送草稿）',
+    body:'收件人：内审部\n主题：关于何明差旅报销异常\n正文摘要：近三个月何明差旅发票与定位不符，合计约 4.2 万。附件在私人 U 盘。拟周一当面提交。草稿时间：10/12 16:55。',
+    start:false}
+};
+
+const LINKS=[
+  {a:'e02',b:'e03',kind:'contra',unlock:['e09'],note:'门禁显示苏晴 19:31 已离开公寓，与「加班到十点」冲突。解锁：公司门禁。'},
+  {a:'e02',b:'e09',kind:'contra',unlock:[],note:'苏晴当晚不在公寓，时间线排除其为动手之人（动机待查，但无作案窗口）。'},
+  {a:'e04',b:'e05',kind:'contra',unlock:['e10'],note:'陆远称在外地，却出现在大厅监控。解锁：陆远行程核验。'},
+  {a:'e04',b:'e03',kind:'contra',unlock:['e10'],note:'聊天称出差，门禁却有陆远访客记录。解锁：行程核验。'},
+  {a:'e05',b:'e07',kind:'assoc',unlock:[],note:'王婶目击与监控时间吻合：陆远短暂停留后离开。'},
+  {a:'e06',b:'e08',kind:'contra',unlock:['e11'],note:'便利店小票支付人「*明」与何明「整晚在公司」说法冲突。解锁：何明支付明细。'},
+  {a:'e06',b:'e11',kind:'assoc',unlock:['e12'],note:'支付记录坐实何明 20:28 在公寓附近。解锁：其电脑检索记录。'},
+  {a:'e08',b:'e11',kind:'contra',unlock:['e12'],note:'远程补打卡 vs 便利店消费，不在场证明破产。解锁：检索记录。'},
+  {a:'e12',b:'e01',kind:'assoc',unlock:['e13'],note:'案发前搜索钝器伤与现场花瓶碎裂吻合。解锁：物证比对。'},
+  {a:'e13',b:'e14',kind:'assoc',unlock:[],note:'U盘指向举报材料；动机闭环。'},
+  {a:'e01',b:'e13',kind:'assoc',unlock:['e14'],note:'现场失物与工位空盒、指纹形成链条。解锁：未发送举报草稿。'},
+  {a:'e05',b:'e11',kind:'assoc',unlock:[],note:'20:41 尾随进入者时间，紧接何明便利店消费之后。'},
+  {a:'e10',b:'e03',kind:'assoc',unlock:[],note:'陆远确有短暂取物，钥匙提醒未落实——为真凶提供了入口条件，但其人已在 20:38 离开。'}
+];
+
+/* Answer keys (synonyms) */
+const ANS={
+  who:['何明','同事何明','嫌疑人何明'],
+  when:['20:40','20:45','20:41','21:00','八点四十','八点四十五','九点','20点','21点','二十点','晚上八点四','晚八'],
+  how:['花瓶','钝器','后脑','备用钥匙','脚垫','尾随','手套','击打'],
+  why:['报销','假账','举报','挪用','4.2','内审','差旅','U盘','证据']
+};
+
+/* ===== State ===== */
+let state={
+  unlocked:Object.keys(EVIDENCE).filter(k=>EVIDENCE[k].start),
+  pinned:{}, /* id -> {x,y} */
+  links:[],  /* {a,b,kind} */
+  tried:[]   /* "a|b|kind" */
+};
+
+function toast(msg,ms){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),ms||2800)}
+
+function save(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  toast('进度已保存到本地');
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw){toast('没有存档');return}
+    state=JSON.parse(raw);
+    renderAll();
+    toast('已读取存档');
+  }catch(e){toast('存档损坏')}
+}
+function autoSave(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
+
+/* ===== Render ===== */
+function renderTray(){
+  const list=document.getElementById('tray-list');
+  list.innerHTML='';
+  state.unlocked.forEach(id=>{
+    const ev=EVIDENCE[id];
+    const pinned=!!state.pinned[id];
+    const el=document.createElement('div');
+    el.className='tray-card'+(pinned?' pinned-away':'');
+    el.dataset.id=id;
+    el.innerHTML=`<span class="tag">${ev.type}</span><div><strong>${ev.title}</strong></div>`;
+    if(!pinned){
+      el.addEventListener('click',()=>pinEvidence(id));
+      el.addEventListener('pointerdown',onTrayDragStart);
+    }
+    list.appendChild(el);
+  });
+}
+function pinEvidence(id,x,y){
+  if(state.pinned[id])return;
+  const board=document.getElementById('board');
+  const n=Object.keys(state.pinned).length;
+  state.pinned[id]={x:x!=null?x:40+(n%4)*220,y:y!=null?y:40+Math.floor(n/4)*180};
+  renderAll();
+  autoSave();
+}
+function unpin(id){
+  delete state.pinned[id];
+  state.links=state.links.filter(l=>l.a!==id&&l.b!==id);
+  renderAll();autoSave();
+}
+
+function renderBoard(){
+  const board=document.getElementById('board');
+  board.querySelectorAll('.pin-card').forEach(n=>n.remove());
+  Object.keys(state.pinned).forEach(id=>{
+    const ev=EVIDENCE[id];
+    const pos=state.pinned[id];
+    const card=document.createElement('div');
+    card.className='pin-card';
+    card.dataset.id=id;
+    card.style.left=pos.x+'px';
+    card.style.top=pos.y+'px';
+    let thumb=ev.svg?`<div class="thumb">${ev.svg}</div>`:'';
+    card.innerHTML=`<div class="pin"></div>
+      <div class="ptype">${ev.type}</div>
+      <h3>${ev.title}</h3>
+      ${thumb}
+      <div class="body">${esc(ev.body).replace(/\n/g,'<br>')}</div>
+      <div class="actions">
+        <button type="button" data-act="sel">点选配对</button>
+        <button type="button" data-act="unpin">取下</button>
+      </div>`;
+    board.appendChild(card);
+    makeDraggable(card);
+    card.querySelector('[data-act="sel"]').addEventListener('click',e=>{e.stopPropagation();toggleSelect(id)});
+    card.querySelector('[data-act="unpin"]').addEventListener('click',e=>{e.stopPropagation();unpin(id)});
+    card.addEventListener('click',e=>{if(e.target.closest('button'))return;toggleSelect(id)});
+  });
+  drawLinks();
+  updateStatus();
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))}
+
+let selected=[];
+function toggleSelect(id){
+  const i=selected.indexOf(id);
+  if(i>=0)selected.splice(i,1);
+  else{
+    if(selected.length>=2)selected.shift();
+    selected.push(id);
+  }
+  document.querySelectorAll('.pin-card').forEach(c=>{
+    c.classList.toggle('selected',selected.includes(c.dataset.id));
+  });
+  const bar=document.getElementById('pair-bar');
+  if(selected.length===2){
+    bar.classList.add('show');
+    document.getElementById('pair-label').textContent=
+      `「${EVIDENCE[selected[0]].title}」×「${EVIDENCE[selected[1]].title}」`;
+  }else bar.classList.remove('show');
+}
+function clearSelect(){
+  selected=[];
+  document.querySelectorAll('.pin-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('pair-bar').classList.remove('show');
+}
+
+function pairKey(a,b,kind){return [a,b].sort().join('|')+'|'+kind}
+
+function tryLink(kind){
+  if(selected.length!==2)return;
+  const [a,b]=selected;
+  const key=pairKey(a,b,kind);
+  if(state.tried.includes(key)||state.links.some(l=>pairKey(l.a,l.b,l.kind)===key)){
+    toast('这两份已经这样标记过了');
+    clearSelect();return;
+  }
+  state.tried.push(key);
+  const hit=LINKS.find(L=>{
+    const ids=[L.a,L.b].sort().join('|');
+    return ids===[a,b].sort().join('|') && L.kind===kind;
+  });
+  if(hit){
+    state.links.push({a,b,kind});
+    const newly=[];
+    (hit.unlock||[]).forEach(uid=>{
+      if(!state.unlocked.includes(uid)){state.unlocked.push(uid);newly.push(EVIDENCE[uid].title)}
+    });
+    let msg='✓ '+hit.note;
+    if(newly.length)msg+=' 新材料：'+newly.join('、');
+    toast(msg,4500);
+  }else{
+    const wrongKind=LINKS.find(L=>{
+      const ids=[L.a,L.b].sort().join('|');
+      return ids===[a,b].sort().join('|') && L.kind!==kind;
+    });
+    if(wrongKind)toast('关系类型不对。试试另一种标记？（关联 / 矛盾）',3500);
+    else toast('这两份暂看不出直接的'+ (kind==='assoc'?'关联':'矛盾') +'。再比对其它材料。',3200);
+  }
+  clearSelect();
+  renderAll();
+  autoSave();
+}
+
+function drawLinks(){
+  const svg=document.getElementById('svg-links');
+  const board=document.getElementById('board');
+  svg.setAttribute('width',board.offsetWidth||1100);
+  svg.setAttribute('height',board.offsetHeight||800);
+  let html='';
+  state.links.forEach(l=>{
+    const pa=state.pinned[l.a],pb=state.pinned[l.b];
+    if(!pa||!pb)return;
+    const x1=pa.x+100,y1=pa.y+20,x2=pb.x+100,y2=pb.y+20;
+    html+=`<line class="link-line ${l.kind==='assoc'?'assoc':'contra'}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  });
+  svg.innerHTML=html;
+}
+
+function updateStatus(){
+  document.getElementById('st-pinned').textContent='已钉：'+Object.keys(state.pinned).length;
+  document.getElementById('st-links').textContent='已标记：'+state.links.length;
+  document.getElementById('st-unlocked').textContent='解锁文档：'+state.unlocked.length+'/'+Object.keys(EVIDENCE).length;
+}
+
+function renderAll(){renderTray();renderBoard()}
+
+/* drag on board */
+function makeDraggable(card){
+  let ox,oy,sx,sy,moved;
+  const id=card.dataset.id;
+  card.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button')||e.target.closest('.body'))return;
+    card.setPointerCapture(e.pointerId);
+    moved=false;
+    ox=state.pinned[id].x;oy=state.pinned[id].y;
+    sx=e.clientX;sy=e.clientY;
+    const move=ev=>{
+      moved=true;
+      const wrap=document.getElementById('board-wrap');
+      const dx=(ev.clientX-sx),dy=(ev.clientY-sy);
+      state.pinned[id].x=Math.max(0,ox+dx);
+      state.pinned[id].y=Math.max(0,oy+dy);
+      card.style.left=state.pinned[id].x+'px';
+      card.style.top=state.pinned[id].y+'px';
+      drawLinks();
+    };
+    const up=()=>{
+      card.releasePointerCapture(e.pointerId);
+      card.removeEventListener('pointermove',move);
+      card.removeEventListener('pointerup',up);
+      if(moved)autoSave();
+    };
+    card.addEventListener('pointermove',move);
+    card.addEventListener('pointerup',up);
+  });
+}
+
+/* tray drag to board */
+let dragTrayId=null;
+function onTrayDragStart(e){
+  const id=e.currentTarget.dataset.id;
+  if(state.pinned[id])return;
+  dragTrayId=id;
+  const ghost=e.currentTarget;
+  const move=ev=>{};
+  const up=ev=>{
+    document.removeEventListener('pointermove',move);
+    document.removeEventListener('pointerup',up);
+    const board=document.getElementById('board');
+    const wrap=document.getElementById('board-wrap');
+    const r=board.getBoundingClientRect();
+    if(ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom){
+      const x=ev.clientX-r.left;
+      const y=ev.clientY-r.top;
+      pinEvidence(dragTrayId,Math.max(0,x-100),Math.max(0,y-20));
+    }
+    dragTrayId=null;
+  };
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up);
+}
+
+/* Report */
+function matchAny(text,arr){
+  const t=text.replace(/\s/g,'').toLowerCase();
+  return arr.some(k=>t.includes(k.toLowerCase().replace(/\s/g,'')));
+}
+function openReport(){
+  const bg=document.getElementById('modal-bg');
+  bg.className='show';
+  bg.innerHTML=`<div class="modal" id="report-modal">
+    <h2>结案报告</h2>
+    <p style="font-size:12px;color:#7a6a55">请用自己的话填写。系统只判断关键信息是否命中，不会直接公布答案。</p>
+    <label>凶手是谁？</label>
+    <input id="r-who" placeholder="姓名">
+    <div class="field-hint" id="h-who"></div>
+    <label>大约何时作案？</label>
+    <input id="r-when" placeholder="例如：10月12日晚上……">
+    <div class="field-hint" id="h-when"></div>
+    <label>如何犯案？（手段 / 如何进入）</label>
+    <textarea id="r-how" placeholder="进入方式、凶器……"></textarea>
+    <div class="field-hint" id="h-how"></div>
+    <label>为何犯案？（动机）</label>
+    <textarea id="r-why" placeholder="动机……"></textarea>
+    <div class="field-hint" id="h-why"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" id="r-submit">提交核验</button>
+      <button class="btn" id="r-close">关闭</button>
+    </div>
+    <p id="r-result" style="margin-top:12px;font-size:13px"></p>
+  </div>`;
+  bg.querySelector('#r-close').onclick=()=>{bg.className='';bg.innerHTML=''};
+  bg.onclick=e=>{if(e.target===bg){bg.className='';bg.innerHTML=''}};
+  bg.querySelector('#r-submit').onclick=()=>{
+    const fields=[
+      {id:'who',el:'r-who',h:'h-who'},
+      {id:'when',el:'r-when',h:'h-when'},
+      {id:'how',el:'r-how',h:'h-how'},
+      {id:'why',el:'r-why',h:'h-why'}
+    ];
+    let ok=0;
+    fields.forEach(f=>{
+      const val=document.getElementById(f.el).value.trim();
+      const hit=matchAny(val,ANS[f.id]);
+      const input=document.getElementById(f.el);
+      const hint=document.getElementById(f.h);
+      input.classList.remove('field-ok','field-bad');
+      if(!val){hint.textContent='未填写';hint.className='field-hint bad';input.classList.add('field-bad')}
+      else if(hit){hint.textContent='✓ 该栏通过';hint.className='field-hint ok';input.classList.add('field-ok');ok++}
+      else{hint.textContent='✗ 该栏未命中关键信息（不公布正确答案）';hint.className='field-hint bad';input.classList.add('field-bad')}
+    });
+    const res=document.getElementById('r-result');
+    if(ok===4){
+      res.innerHTML='<strong style="color:#2d6a4f">结案成立。</strong>何明为掩盖差旅报销造假，于 10月12日约 20:41–21:12 尾随进入云栖公寓，用脚垫下备用钥匙入室，持花瓶击打方予安后脑并取走存有举报材料的 U 盘。陆远短暂取物留下钥匙隐患；苏晴陈述有假但无作案时间。';
+      toast('全部核验通过！',4000);
+    }else res.textContent=`通过 ${ok}/4 栏。请根据证据堆继续比对后修正未通过栏目。`;
+  };
+}
+
+function openHelp(){
+  const bg=document.getElementById('modal-bg');
+  bg.className='show';
+  bg.innerHTML=`<div class="modal">
+    <h2>操作说明</h2>
+    <ol style="padding-left:18px">
+      <li>点击左侧证据卡，或拖到软木板，即可「钉」上。</li>
+      <li>点击两份已钉证据（或按「点选配对」），底部弹出标记条。</li>
+      <li>选择「关联」或「矛盾」。正确会解锁新文档；错误仅短提示。</li>
+      <li>没有选项指路——请自己交叉阅读原文。</li>
+      <li>线索足够后点「提交结案报告」，自由填写谁/何时/如何/为何。</li>
+      <li>「存档 / 读档」使用浏览器 localStorage。</li>
+    </ol>
+    <button class="btn primary" style="margin-top:12px" id="h-ok">知道了</button>
+  </div>`;
+  bg.querySelector('#h-ok').onclick=()=>{bg.className='';bg.innerHTML=''};
+  bg.onclick=e=>{if(e.target===bg){bg.className='';bg.innerHTML=''}};
+}
+
+/* wire */
+document.getElementById('btn-start').onclick=()=>{
+  document.getElementById('intro').style.display='none';
+  renderAll();
+};
+document.getElementById('btn-help').onclick=openHelp;
+document.getElementById('btn-save').onclick=save;
+document.getElementById('btn-load').onclick=load;
+document.getElementById('btn-report').onclick=openReport;
+document.getElementById('btn-assoc').onclick=()=>tryLink('assoc');
+document.getElementById('btn-contra').onclick=()=>tryLink('contra');
+document.getElementById('btn-cancel-pair').onclick=clearSelect;
+
+/* expose for tests */
+window.__dossier={state,EVIDENCE,LINKS,ANS,pinEvidence,tryLink,toggleSelect,save,load,renderAll,matchAny,clearSelect,openReport,
+  setSelected(a,b){selected=[a,b];document.getElementById('pair-bar').classList.add('show')},
+  getSelected:()=>selected.slice(),
+  unlockAll(){state.unlocked=Object.keys(EVIDENCE);renderAll()},
+  getState:()=>state
+};
+})();
+</script>
+</body>
+</html>
